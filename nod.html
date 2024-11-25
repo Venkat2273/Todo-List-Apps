@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO list app</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #2c3e50;
+            color: white;
+            padding: 2rem;
+            position: fixed;
+            height: 100vh;
+            width: 300px;
+        }
+
+        .main-content {
+            margin-left: 300px;
+            padding: 2rem;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #34495e;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .workspace-list {
+            margin-top: 2rem;
+        }
+
+        .workspace-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .workspace-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .workspace-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .task-column {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .task-count {
+            background: #f0f2f5;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+        }
+
+        .task-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-task-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #3498db;
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .add-task-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background: #ecfdf5;
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="profile">
+                <div class="profile-image">A</div>
+                <div class="profile-info">
+                    <h3>VEnkat ramana</h3>
+                    <p>TODO LIST</p>
+                </div>
+            </div>
+            <div class="workspace-list">
+                <h4>Workspaces</h4>
+                <div class="workspace-item active">
+                    <div class="workspace-icon" style="background: #e74c3c;">P</div>
+                    <span>Personal Projects</span>
+                </div>
+                <div class="workspace-item">
+                    <div class="workspace-icon" style="background: #2ecc71;">W</div>
+                    <span>Work Tasks</span>
+                </div>
+                <div class="workspace-item">
+                    <div class="workspace-icon" style="background: #f1c40f;">T</div>
+                    <span>Team Collaboration</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="task-grid">
+                <div class="task-column">
+                    <div class="column-header">
+                        <h3>To Do</h3>
+                        <span class="task-count">3</span>
+                    </div>
+                    <div class="task-list">
+                        <div class="task-card">
+                            <span class="priority-badge priority-high">High Priority</span>
+                            <h4>Update project documentation</h4>
+                            <p>Review and update all project documentation for Q4</p>
+                        </div>
+                        <div class="task-card">
+                            <span class="priority-badge priority-medium">Medium Priority</span>
+                            <h4>Client meeting preparation</h4>
+                            <p>Prepare presentation slides for tomorrow's meeting</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-column">
+                    <div class="column-header">
+                        <h3>In Progress</h3>
+                        <span class="task-count">2</span>
+                    </div>
+                    <div class="task-list">
+                        <div class="task-card">
+                            <span class="priority-badge priority-high">High Priority</span>
+                            <h4>Feature implementation</h4>
+                            <p>Implement new authentication system</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-column">
+                    <div class="column-header">
+                        <h3>Completed</h3>
+                        <span class="task-count">1</span>
+                    </div>
+                    <div class="task-list">
+                        <div class="task-card">
+                            <span class="priority-badge priority-low">Low Priority</span>
+                            <h4>Team review</h4>
+                            <p>Weekly team performance review</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="add-task-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </div>
+
+    <div class="modal" id="addTaskModal">
+        <div class="modal-content">
+            <h2>Create New Task</h2>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title</label>
+                    <input type="text" id="taskTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="taskPriority">Priority</label>
+                    <select id="taskPriority">
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" id="cancelTask">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const addTaskBtn = document.querySelector('.add-task-btn');
+        const modal = document.querySelector('#addTaskModal');
+        const cancelBtn = document.querySelector('#cancelTask');
+
+        addTaskBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Form submission
+        const taskForm = document.querySelector('#taskForm');
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.querySelector('#taskTitle').value;
+            const description = document.querySelector('#taskDescription').value;
+            const priority = document.querySelector('#taskPriority').value;
+            
+            // Create new task card
+            const taskCard = createTaskCard(title, description, priority);
+            
+            // Add to To Do column
+            const todoColumn = document.querySelector('.task-list');
+            todoColumn.prepend(taskCard);
+            
+            // Update task count
+            updateTaskCount();
+            
+            // Clear form and close modal
+            taskForm.reset();
+            modal.style.display = 'none';
+        });
+
+        function createTaskCard(title, description, priority) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            
+            const priorityBadge = document.createElement('span');
+            priorityBadge.className = `priority-badge priority-${priority}`;
+            priorityBadge.textContent = `${priority.charAt(0).toUpperCase() + priority.slice(1)} Priority`;
+            
+            const taskTitle = document.createElement('h4');
+            taskTitle.textContent = title;
+            
+            const taskDescription = document.createElement('p');
+            taskDescription.textContent = description;
+            
+            card.appendChild(priorityBadge);
+            card.appendChild(taskTitle);
+            card.appendChild(taskDescription);
+            
+            return card;
+        }
+
+        function updateTaskCount() {
+            const columns = document.querySelectorAll('.task-column');
+            columns.forEach(column => {
+                const count = column.querySelectorAll('.task-card').length;
+                column.querySelector('.task-count').textContent = count;
+            });
+        }
+    </script>
+</body>
+</html>
